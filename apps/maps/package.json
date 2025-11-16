@@ -30,5 +30,12 @@
       "default": "./src/remote-entry.ts"
     }
   },
-  "types": "./src/remote-entry.ts"
+  "types": "./src/remote-entry.ts",
+  "dependencies": {
+    "@types/leaflet": "^1.9.21",
+    "leaflet": "^1.9.4"
+  },
+  "devDependencies": {
+    "react-leaflet": "^5.0.0"
+  }
 }
