@@ -2,9 +2,27 @@
 
 <a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+✨ A modern micro-frontend application built with Nx workspace and module federation ✨.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/react-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+This workspace contains multiple applications including a shell host app and micro-frontends for maps and insights functionality.
+
+## Project Overview
+
+This project is built using:
+- **Nx Workspace** for monorepo management
+- **Module Federation** for micro-frontend architecture
+- **Tailwind CSS** for styling and responsive design
+- **React** for the frontend framework
+- **Leaflet.js** for interactive map features
+
+### Applications
+
+- **Shell**: The host application that serves static remotes at build time
+- **Maps**: Features interactive maps with heatmap density layers and candidate markers using Leaflet.js
+- **Insights**: Data visualization and analytics components
+- **Talkinglands**: Main application with routing capabilities
+
+[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/react-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created.
 
 ## Finish your remote caching setup
 
@@ -13,17 +31,44 @@
 
 ## Run tasks
 
-To run the dev server for your app, use:
+### Development Servers
+
+To run the shell application (which serves static remotes at build time):
+
+```sh
+npx nx serve shell
+```
+
+To run the dev server for the main talkinglands app:
 
 ```sh
 npx nx serve talkinglands
 ```
 
-To create a production bundle:
+To run the maps micro-frontend:
+
+```sh
+npx nx serve maps
+```
+
+To run the insights micro-frontend:
+
+```sh
+npx nx serve insights
+```
+
+### Production Builds
+
+To create a production bundle for any application:
 
 ```sh
 npx nx build talkinglands
+npx nx build shell
+npx nx build maps
+npx nx build insights
 ```
+
+### Project Information
 
 To see all available targets to run for a project, run:
 
@@ -34,6 +79,25 @@ npx nx show project talkinglands
 These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
 
 [More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+
+## Features
+
+### Styling
+- **Tailwind CSS** is implemented across all applications for consistent styling and responsive design
+- Utility-first CSS framework for rapid development
+
+### Maps Application
+- Interactive maps powered by **Leaflet.js**
+- Heatmap density layers for data visualization
+- Candidate markers for location-based information
+- Responsive map interface with zoom and pan capabilities
+
+### Architecture
+- **Module Federation** for micro-frontend architecture
+- Shell application that serves static remotes at build time
+- Independent deployment and development of micro-frontends
+
+> **Note**: This README will be updated gradually as the application develops and new features are implemented.
 
 ## Add new projects
 
@@ -59,6 +123,14 @@ You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx 
 
 
 [Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+
+## Contributors
+
+- **[Pranavjeet Mishra](https://linkedin.com/in/pranavjeet)** - Lead Developer
+
+## Support
+
+For support tickets and inquiries, please contact: [pranavjeet.m@gmail.com](mailto:pranavjeet.m@gmail.com)
 
 ## Install Nx Console
 
