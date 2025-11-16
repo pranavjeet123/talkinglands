@@ -8,6 +8,24 @@
     },
     {
       "path": "./apps/talkinglands"
+    },
+    {
+      "path": "./apps/shell-e2e"
+    },
+    {
+      "path": "./apps/shell"
+    },
+    {
+      "path": "./apps/maps-e2e"
+    },
+    {
+      "path": "./apps/maps"
+    },
+    {
+      "path": "./apps/insights-e2e"
+    },
+    {
+      "path": "./apps/insights"
     }
   ]
 }
