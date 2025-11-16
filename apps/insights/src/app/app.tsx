@@ -1,10 +1,10 @@
-import NxWelcome from './nx-welcome';
+import { InsightsWelcome } from './insights-welcome';
 import '../styles.css';
 
 export function App() {
   return (
     <div>
-      <NxWelcome title="insights" />
+      <InsightsWelcome />
     </div>
   );
 }

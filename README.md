@@ -91,6 +91,13 @@ These targets are either [inferred automatically](https://nx.dev/concepts/inferr
 - Heatmap density layers for data visualization
 - Candidate markers for location-based information
 - Responsive map interface with zoom and pan capabilities
+- Mock data available at `/public/mock-data.json` containing POI and candidate locations
+
+### Data
+- **Mock Data**: GeoJSON format data located in `/public/mock-data.json`
+- Contains Points of Interest (POI) including cafes, offices, transit stations, universities, malls, and residential areas
+- Includes candidate locations with estimated rent data
+- Designed for use by both Maps and Insights micro-frontends for component generation and testing
 
 ### Architecture
 - **Module Federation** for micro-frontend architecture

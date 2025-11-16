@@ -1,10 +1,10 @@
-import NxWelcome from './nx-welcome';
+import { MapsWelcome } from './maps-welcome';
 import '../styles.css';
 
 export function App() {
   return (
     <div>
-      <NxWelcome title="maps" />
+      <MapsWelcome />
     </div>
   );
 }

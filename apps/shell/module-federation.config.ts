@@ -14,7 +14,10 @@ const config: ModuleFederationConfig = {
    * declare module 'my-external-remote';
    *
    */
-  remotes: [['maps', 'insights']],
+  remotes: [
+    ['maps', 'http://localhost:4201'],
+    ['insights', 'http://localhost:4202']
+  ],
 };
 
 /**
