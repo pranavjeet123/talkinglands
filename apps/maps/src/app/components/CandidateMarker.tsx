@@ -4,6 +4,8 @@ import { GeoFeature, Candidate } from '../services/mockDataService';
 
 interface CandidateMarkerProps {
   feature: GeoFeature;
+  isFavorite?: boolean;
+  onToggleFavorite?: (candidateId: string) => void;
 }
 
 const createCandidateIcon = (rentValue: number) => {
@@ -44,7 +46,7 @@ const createCandidateIcon = (rentValue: number) => {
   });
 };
 
-export function CandidateMarker({ feature }: CandidateMarkerProps) {
+export function CandidateMarker({ feature, isFavorite = false, onToggleFavorite }: CandidateMarkerProps) {
   const { coordinates } = feature.geometry;
   const properties = feature.properties as Candidate;
   // Convert from GeoJSON [longitude, latitude] to Leaflet [latitude, longitude]
@@ -71,14 +73,35 @@ export function CandidateMarker({ feature }: CandidateMarkerProps) {
     >
       <Popup maxWidth={300}>
         <div className="p-2">
-          <div className="flex items-center mb-2">
-            <span 
-              className="inline-block w-3 h-3 rounded-full mr-2"
-              style={{ backgroundColor: getRentColor(properties.estimated_rent) }}
-            ></span>
-            <h3 className="text-lg font-semibold text-gray-800">
-              Candidate Location
-            </h3>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center">
+              <span 
+                className="inline-block w-3 h-3 rounded-full mr-2"
+                style={{ backgroundColor: getRentColor(properties.estimated_rent) }}
+              ></span>
+              <h3 className="text-lg font-semibold text-gray-800">
+                Candidate Location
+              </h3>
+            </div>
+            {onToggleFavorite && (
+              <button
+                onClick={() => onToggleFavorite(properties.id)}
+                className={`p-1 rounded-full transition-colors ${
+                  isFavorite 
+                    ? 'text-red-500 hover:text-red-600' 
+                    : 'text-gray-400 hover:text-red-500'
+                }`}
+                title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+              >
+                <span 
+                  className="text-lg"
+                  role="img"
+                  aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                >
+                  {isFavorite ? '❤️' : '🤍'}
+                </span>
+              </button>
+            )}
           </div>
           
           <div className="mb-2">

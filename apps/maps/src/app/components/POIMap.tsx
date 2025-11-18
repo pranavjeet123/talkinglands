@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { MockDataResponse, fetchMockData, getPOIs, getCandidates } from '../services/mockDataService';
+import { MockDataResponse, fetchMockData, getPOIs, getCandidates, Candidate } from '../services/mockDataService';
 import { POIMarker } from './POIMarker';
 import { CandidateMarker } from './CandidateMarker';
 
@@ -21,6 +21,8 @@ export function POIMap() {
   const [error, setError] = useState<string | null>(null);
   const [showCandidates, setShowCandidates] = useState(true);
   const [showPOIs, setShowPOIs] = useState(true);
+  const [favoriteCandidates, setFavoriteCandidates] = useState<Set<string>>(new Set());
+  const [showFavoritesPanel, setShowFavoritesPanel] = useState(false);
 
   // Bangalore coordinates - center of our POI data
   const bangaloreCenter: [number, number] = [12.9716, 77.5946];
@@ -45,6 +47,24 @@ export function POIMap() {
 
   const poiFeatures = mockData ? getPOIs(mockData) : [];
   const candidateFeatures = mockData ? getCandidates(mockData) : [];
+
+  const toggleFavorite = (candidateId: string) => {
+    setFavoriteCandidates(prev => {
+      const newFavorites = new Set(prev);
+      if (newFavorites.has(candidateId)) {
+        newFavorites.delete(candidateId);
+      } else {
+        newFavorites.add(candidateId);
+      }
+      return newFavorites;
+    });
+  };
+
+  const getFavoriteCandidates = () => {
+    return candidateFeatures.filter(feature => 
+      favoriteCandidates.has(feature.properties.id)
+    );
+  };
 
   const getPoiTypeStats = () => {
     const stats: { [key: string]: number } = {};
@@ -105,6 +125,20 @@ export function POIMap() {
               />
               Show Candidates ({candidateCount})
             </label>
+            <button
+              onClick={() => setShowFavoritesPanel(!showFavoritesPanel)}
+              className="flex items-center space-x-2 px-3 py-2 bg-pink-100 text-pink-700 rounded-lg hover:bg-pink-200 transition-colors"
+              title="View Favorite Candidates"
+            >
+              <span 
+                className="text-lg"
+                role="img"
+                aria-label="Favorites"
+              >
+                ❤️
+              </span>
+              <span className="text-sm font-medium">Favorites ({favoriteCandidates.size})</span>
+            </button>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -157,7 +191,9 @@ export function POIMap() {
           {showCandidates && candidateFeatures.map((feature) => (
             <CandidateMarker 
               key={feature.properties.id} 
-              feature={feature} 
+              feature={feature}
+              isFavorite={favoriteCandidates.has(feature.properties.id)}
+              onToggleFavorite={toggleFavorite}
             />
           ))}
         </MapContainer>
@@ -221,6 +257,88 @@ export function POIMap() {
           </div>
         </div>
       </div>
+
+      {/* Favorites Panel */}
+      {showFavoritesPanel && (
+        <div className="bg-white p-4 rounded-lg shadow-sm border">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-lg font-semibold text-gray-800">
+              Favorite Candidates ({favoriteCandidates.size})
+            </h4>
+            <button
+              onClick={() => setShowFavoritesPanel(false)}
+              className="text-gray-500 hover:text-gray-700"
+              title="Close favorites panel"
+            >
+              ✕
+            </button>
+          </div>
+          
+          {favoriteCandidates.size === 0 ? (
+            <div className="text-center py-8">
+              <span 
+                className="text-4xl mb-2 block"
+                role="img"
+                aria-label="No favorites"
+              >
+                💔
+              </span>
+              <p className="text-gray-500">No favorite candidates selected yet.</p>
+              <p className="text-sm text-gray-400 mt-1">
+                Click the heart icon on candidate markers to add them to favorites.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {getFavoriteCandidates().map((candidate) => {
+                const props = candidate.properties as Candidate;
+                const getRentColor = (rent: number): string => {
+                  if (rent >= 80000) return '#EF4444';
+                  if (rent >= 65000) return '#F59E0B';
+                  if (rent >= 50000) return '#10B981';
+                  return '#3B82F6';
+                };
+                
+                return (
+                  <div key={props.id} className="border rounded-lg p-3 bg-gray-50">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center">
+                        <span 
+                          className="inline-block w-3 h-3 rounded-full mr-2"
+                          style={{ backgroundColor: getRentColor(props.estimated_rent) }}
+                        ></span>
+                        <span className="font-medium text-gray-800">{props.id}</span>
+                      </div>
+                      <button
+                        onClick={() => toggleFavorite(props.id)}
+                        className="text-red-500 hover:text-red-600"
+                        title="Remove from favorites"
+                      >
+                        <span 
+                          role="img"
+                          aria-label="Remove from favorites"
+                        >
+                          ❤️
+                        </span>
+                      </button>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      <div className="font-semibold">
+                        ₹{props.estimated_rent.toLocaleString('en-IN')}/month
+                      </div>
+                      <div className="mt-1 italic">{props.notes}</div>
+                      <div className="mt-1 text-xs">
+                        Lat: {candidate.geometry.coordinates[1].toFixed(4)}, 
+                        Lng: {candidate.geometry.coordinates[0].toFixed(4)}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
