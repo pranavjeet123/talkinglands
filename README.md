@@ -1,161 +1,200 @@
-# Talkinglands
+# TalkingLands
 
 <a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
 
-✨ A modern micro-frontend application built with Nx workspace and module federation ✨.
+A modern micro-frontend application built with Nx workspace and module federation architecture.
 
-This workspace contains multiple applications including a shell host app and micro-frontends for maps and insights functionality.
+This monorepo contains multiple applications implementing a distributed micro-frontend system with real-time inter-application communication using RxJS observables.
 
-## Project Overview
+## Architecture Overview
 
-This project is built using:
-- **Nx Workspace** for monorepo management
-- **Module Federation** for micro-frontend architecture
-- **Tailwind CSS** for styling and responsive design
-- **React** for the frontend framework
-- **Leaflet.js** for interactive map features
+### Technology Stack
+- **Nx Workspace 22.0.3** for monorepo management and build orchestration
+- **Module Federation** (@module-federation/enhanced) for micro-frontend runtime integration
+- **Rspack** as the build tool with TypeScript support
+- **React 19.0.0** with TypeScript for component development
+- **RxJS 7.8.2** for reactive state management and inter-microfrontend communication
+- **Tailwind CSS** for utility-first styling
+- **Leaflet.js** for geospatial data visualization
 
-### Applications
+### Repository Structure
+```
+apps/
+├── shell/                 # Module federation host application
+├── shell-e2e/            # E2E tests for shell
+├── maps/                  # Maps microfrontend (remote)
+├── maps-e2e/             # E2E tests for maps
+├── insights/              # Analytics microfrontend (remote)
+├── insights-e2e/         # E2E tests for insights
+├── talkinglands/          # Standalone React Router application
+└── talkinglands-e2e/     # E2E tests for talkinglands
+```
 
-- **Shell**: The host application that serves static remotes at build time
-- **Maps**: Features interactive maps with heatmap density layers and candidate markers using Leaflet.js
-- **Insights**: Data visualization and analytics components
-- **Talkinglands**: Main application with routing capabilities
+### Micro-Frontend Applications
+
+#### Shell Application
+- **Type**: Module Federation Host
+- **Runtime**: Rspack dev server
+- **Purpose**: Orchestrates and serves remote microfrontends at build time
+- **Routes**: `/maps`, `/insights`, `/`
+
+#### Maps Microfrontend
+- **Type**: Module Federation Remote
+- **Exposed Module**: `./Module`
+- **Features**: 
+  - Interactive Leaflet.js maps with candidate location markers
+  - Real-time favorites management with RxJS state synchronization
+  - GeoJSON data processing and visualization
+  - Touch-optimized responsive interface
+
+#### Insights Microfrontend
+- **Type**: Module Federation Remote  
+- **Exposed Module**: `./Module`
+- **Features**:
+  - Real-time analytics dashboard consuming Maps application state
+  - Favorites aggregation and statistical analysis
+  - Live activity feed with timestamp tracking
+  - Currency formatting for rent data (INR)
+
+#### TalkingLands Application
+- **Type**: Standalone React application with React Router
+- **Purpose**: Independent application demonstrating traditional SPA architecture
+- **Build Tool**: Vite for development and production builds
+
+## Inter-Microfrontend Communication System
+
+### RxJS-Based Communication Architecture
+The application implements a sophisticated real-time communication system using RxJS observables for cross-microfrontend state synchronization.
+
+#### Technical Implementation
+```typescript
+// Communication Service (Singleton Pattern)
+class MicrofrontendCommunicationService {
+  private favoriteCandidatesSubject = new BehaviorSubject<Feature[]>([]);
+  private selectedCandidateSubject = new BehaviorSubject<Feature | null>(null);
+  private globalMessageSubject = new Subject<MicrofrontendMessage>();
+}
+
+// Global Window Integration
+window.__MICROFRONTEND_COMMUNICATION__ = serviceInstance;
+```
+
+#### Data Flow Architecture
+```
+Maps Microfrontend
+    ↓ User Actions (add/remove favorites)
+    ↓ BehaviorSubject.next()
+Global RxJS State (Window Object)
+    ↓ Observable subscriptions
+    ↓ Real-time updates
+Insights Microfrontend
+    ↓ Dashboard updates, analytics
+```
+
+#### Communication Features
+- **Bidirectional State Sync**: Changes in either microfrontend instantly reflect across applications
+- **Type Safety**: Full TypeScript interfaces for all message payloads and state objects
+- **Memory Management**: Automatic subscription cleanup on component unmount
+- **Singleton Pattern**: Single source of truth for global communication state
+- **Message Types**: Structured message system with type discrimination
 
 [Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/react-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created.
 
-## Finish your remote caching setup
+## Development Workflow
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/o0QYtaZJoh)
-
-
-## Run tasks
+### Build System Configuration
+- **Rspack**: Primary build tool for Maps, Insights, and Shell applications
+- **Vite**: Build tool for TalkingLands standalone application  
+- **TypeScript**: Strict mode enabled with incremental compilation
+- **Module Federation**: Static remotes served at build time
 
 ### Development Servers
 
-To run the shell application (which serves static remotes at build time):
-
+Start the shell application (module federation host):
 ```sh
 npx nx serve shell
 ```
 
-To run the dev server for the main talkinglands app:
+Start individual microfrontends for isolated development:
+```sh
+npx nx serve maps     # Maps microfrontend
+npx nx serve insights # Insights microfrontend
+```
 
+Start the standalone React Router application:
 ```sh
 npx nx serve talkinglands
 ```
 
-To run the maps micro-frontend:
-
-```sh
-npx nx serve maps
-```
-
-To run the insights micro-frontend:
-
-```sh
-npx nx serve insights
-```
-
 ### Production Builds
 
-To create a production bundle for any application:
-
+Generate optimized production bundles:
 ```sh
-npx nx build talkinglands
-npx nx build shell
-npx nx build maps
-npx nx build insights
+npx nx build shell      # Module federation host
+npx nx build maps       # Maps microfrontend  
+npx nx build insights   # Insights microfrontend
+npx nx build talkinglands # Standalone application
 ```
 
-### Project Information
+### Testing and Quality Assurance
 
-To see all available targets to run for a project, run:
-
+Execute E2E tests for all applications:
 ```sh
-npx nx show project talkinglands
+npx nx e2e shell-e2e
+npx nx e2e maps-e2e  
+npx nx e2e insights-e2e
+npx nx e2e talkinglands-e2e
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Data Architecture
 
-## Features
+### Mock Data Structure
+- **Location**: `/public/mock-data.json`
+- **Format**: GeoJSON FeatureCollection specification
+- **Content**: 
+  - Points of Interest (POI): cafes, offices, transit stations, universities, malls, residential areas
+  - Candidate locations with estimated rent data in INR
+  - Geographic coordinates for map visualization
 
-### Styling
-- **Tailwind CSS** is implemented across all applications for consistent styling and responsive design
-- Utility-first CSS framework for rapid development
 
-### Maps Application
-- Interactive maps powered by **Leaflet.js**
-- Heatmap density layers for data visualization
-- Candidate markers for location-based information
-- Responsive map interface with zoom and pan capabilities
-- Mock data available at `/public/mock-data.json` containing POI and candidate locations
+## Development Tools and Workspace Management
 
-### Data
-- **Mock Data**: GeoJSON format data located in `/public/mock-data.json`
-- Contains Points of Interest (POI) including cafes, offices, transit stations, universities, malls, and residential areas
-- Includes candidate locations with estimated rent data
-- Designed for use by both Maps and Insights micro-frontends for component generation and testing
+### Nx Workspace Features
+- **Computation Caching**: Intelligent build and test caching for improved performance
+- **Task Dependencies**: Automated dependency graph execution
+- **Code Sharing**: Shared TypeScript configurations and build tools
+- **Parallel Execution**: Concurrent build and test execution across applications
 
-### Architecture
-- **Module Federation** for micro-frontend architecture
-- Shell application that serves static remotes at build time
-- Independent deployment and development of micro-frontends
+### Code Quality and Standards  
+- **ESLint**: Configured with React and TypeScript rules across all applications
+- **Prettier**: Consistent code formatting with shared configuration
+- **TypeScript**: Strict mode compilation with incremental builds
+- **Playwright**: End-to-end testing framework for all applications
 
-> **Note**: This README will be updated gradually as the application develops and new features are implemented.
-
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
-
-```sh
-npx nx g @nx/react:app demo
+### Project Structure Standards
+Each application follows a consistent structure:
 ```
-
-To generate a new library, use:
-
-```sh
-npx nx g @nx/react:lib mylib
+apps/{application}/
+├── src/
+│   ├── app/                 # React components and application logic
+│   │   ├── components/      # Reusable UI components  
+│   │   └── services/        # Business logic and API services
+│   ├── types/               # TypeScript type definitions
+│   └── styles.css           # Tailwind CSS imports
+├── public/                  # Static assets
+├── rspack.config.ts         # Build configuration
+├── tsconfig.json           # TypeScript configuration
+└── package.json            # Application-specific dependencies
 ```
-
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 
 ## Contributors
 
-- **[Pranavjeet Mishra](https://linkedin.com/in/pranavjeet)** - Lead Developer
+**Pranavjeet Mishra** - Solution Architect &  Developer  
+Contact: pranavjeet.m@gmail.com  
+LinkedIn: [linkedin.com/in/pranavjeet](https://linkedin.com/in/pranavjeet)
 
-## Support
+## Reference Documentation
 
-For support tickets and inquiries, please contact: [pranavjeet.m@gmail.com](mailto:pranavjeet.m@gmail.com)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/react-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- [Nx Documentation](https://nx.dev) - Nx workspace and tooling documentation  
+- [Module Federation Documentation](https://module-federation.github.io/) - Micro-frontend architecture patterns
