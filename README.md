@@ -11,7 +11,8 @@ This monorepo contains multiple applications implementing a distributed micro-fr
 ### Technology Stack
 - **Nx Workspace 22.0.3** for monorepo management and build orchestration
 - **Module Federation** (@module-federation/enhanced) for micro-frontend runtime integration
-- **Rspack** as the build tool with TypeScript support
+- **Rspack** as the primary build tool for micro-frontend applications (Shell, Maps, Insights)
+- **Vite** as the build tool for standalone TalkingLands application (React Router SPA)
 - **React 19.0.0** with TypeScript for component development
 - **RxJS 7.8.2** for reactive state management and inter-microfrontend communication
 - **Tailwind CSS** for utility-first styling
@@ -40,6 +41,7 @@ apps/
 
 #### Maps Microfrontend
 - **Type**: Module Federation Remote
+- **Build Tool**: Rspack with Module Federation support
 - **Exposed Module**: `./Module`
 - **Features**: 
   - Interactive Leaflet.js maps with candidate location markers
@@ -48,7 +50,8 @@ apps/
   - Touch-optimized responsive interface
 
 #### Insights Microfrontend
-- **Type**: Module Federation Remote  
+- **Type**: Module Federation Remote
+- **Build Tool**: Rspack with Module Federation support  
 - **Exposed Module**: `./Module`
 - **Features**:
   - Real-time analytics dashboard consuming Maps application state
@@ -58,8 +61,9 @@ apps/
 
 #### TalkingLands Application
 - **Type**: Standalone React application with React Router
+- **Build Tool**: Vite (optimized for React Router SPA development)
 - **Purpose**: Independent application demonstrating traditional SPA architecture
-- **Build Tool**: Vite for development and production builds
+- **Rationale**: Uses Vite for simplified configuration and excellent React Router integration
 
 ## Inter-Microfrontend Communication System
 
@@ -103,10 +107,40 @@ Insights Microfrontend
 ## Development Workflow
 
 ### Build System Configuration
-- **Rspack**: Primary build tool for Maps, Insights, and Shell applications
-- **Vite**: Build tool for TalkingLands standalone application  
-- **TypeScript**: Strict mode enabled with incremental compilation
-- **Module Federation**: Static remotes served at build time
+- **Rspack**: Primary build tool for micro-frontend applications (Shell, Maps, Insights)
+  - Optimized for Module Federation architecture
+  - 5-10x faster build performance compared to Webpack
+  - Native TypeScript support with hot module replacement
+- **Vite**: Build tool for TalkingLands standalone application
+  - Optimized for React Router SPA development
+  - Lightning-fast development server with HMR
+  - Simpler configuration for traditional single-page applications
+- **TypeScript**: Strict mode enabled with incremental compilation across all applications
+- **Module Federation**: Static remotes served at build time for micro-frontend integration
+
+## Build Tool Strategy
+
+The project strategically uses **two different build tools** optimized for different architectural patterns:
+
+### Rspack for Micro-Frontend Applications
+**Applications**: Shell (Host), Maps (Remote), Insights (Remote)
+
+**Why Rspack:**
+- ✅ **Module Federation Support**: Native integration for micro-frontend architecture
+- ✅ **Performance**: 5-10x faster builds than Webpack (Rust-based implementation)
+- ✅ **Webpack Compatibility**: Drop-in replacement with existing ecosystem support
+- ✅ **Enterprise Scale**: Optimized for complex, distributed frontend systems
+
+### Vite for Standalone Application
+**Application**: TalkingLands (React Router SPA)
+
+**Why Vite:**
+- ✅ **React Router Optimization**: Built-in React Router dev plugin support
+- ✅ **Development Speed**: Lightning-fast HMR for standalone development
+- ✅ **Simplified Configuration**: Perfect for traditional SPA without micro-frontend complexity
+- ✅ **Architectural Flexibility**: Demonstrates build tool choice freedom within monorepo
+
+This dual-build-tool approach showcases the **flexibility of Nx workspace** to support different technologies for different architectural patterns within the same monorepo.
 
 ### Development Servers
 
@@ -130,10 +164,13 @@ npx nx serve talkinglands
 
 Generate optimized production bundles:
 ```sh
+# Micro-frontend applications (using Rspack)
 npx nx build shell      # Module federation host
 npx nx build maps       # Maps microfrontend  
 npx nx build insights   # Insights microfrontend
-npx nx build talkinglands # Standalone application
+
+# Standalone application (using Vite)
+npx nx build talkinglands # Standalone React Router SPA
 ```
 
 ### Testing and Quality Assurance
