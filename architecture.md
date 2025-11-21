@@ -273,7 +273,7 @@ class MicrofrontendCommunicationService {
 
 ### Communication Flow Diagram
 
-![RxJS Communication Pattern - Maps and Insights Interaction](download.png)
+![RxJS Communication Pattern - Maps and Insights Interaction](https://github.com/pranavjeet123/talkinglands/blob/main/public/download.png)
 
 ### State Management Layers
 
