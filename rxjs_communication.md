@@ -1,11 +1,11 @@
 # RxJS Communication Pattern - Sequence Flow
-## Maps ↔️ Insights Microfrontend Communication
+## Maps and Insights Microfrontend Communication
 
 This document explains the RxJS-based communication pattern used for sharing data between the Maps and Insights microfrontends when a user clicks on favorites from the candidate list.
 
 ---
 
-## 🎯 Architecture Overview
+## Architecture Overview
 
 The application uses a **Singleton Communication Service** with RxJS Subjects to enable real-time, reactive data sharing between microfrontends:
 
@@ -15,37 +15,13 @@ The application uses a **Singleton Communication Service** with RxJS Subjects to
 
 ---
 
-## 📊 Sequence Flow Diagram
+## Sequence Flow Diagram
 
-```mermaid
-User->MapsList:Click ★ on candidate
-note over CommService:Singleton Pattern via\nwindow.__MICROFRONTEND_COMMUNICATION__
-MapsList->CommService:getCommunicationService()
-MapsList<--CommService:Return singleton instance
-MapsList->CommService:addFavoriteCandidate(candidate, 'maps')
-note over CommService:Check if already favorite
-CommService->FavSubject:Get current value (.value property)
-CommService<--FavSubject:Current favorites array
-note over CommService:If not duplicate, proceed with update
-CommService->FavSubject:next([...currentFavorites, newCandidate])
-FavSubject->MapsList:Emit updated favorites[] array
-FavSubject->InsightsDash:Emit updated favorites[] array
-note over InsightsDash:React useEffect detects change\nvia subscription
-InsightsDash->InsightsDash:setFavorites(newFavorites)
-InsightsDash->InsightsDash:Update UI with new data
-CommService->MsgSubject:sendMessage('FAVORITE_ADDED', candidate, 'maps')
-note over MsgSubject:Broadcast event to all subscribers\nfor analytics/logging
-MsgSubject->MapsList:Emit message event
-MsgSubject->InsightsDash:Emit message event
-MapsList->CommService:sendMessage('FAVORITE_ANALYTICS', {...}, 'maps')
-CommService->MsgSubject:next(analytics message)
-note over MsgSubject:Optional analytics tracking
-note over InsightsDash:Dashboard now displays\nupdated favorites list
-```
+![RxJS Communication Pattern - Maps and Insights Interaction](https://github.com/pranavjeet123/talkinglands/blob/main/public/download.png)
 
 ---
 
-## 🔄 RxJS Subjects Interaction & Working
+## RxJS Subjects Interaction & Working
 
 ### 1. **Singleton Communication Service**
 
@@ -143,7 +119,7 @@ messages$.subscribe(msg => {
 
 ### **Step 1: User Interaction**
 ```
-User clicks ★ (star) icon on a candidate in Maps/LocationList
+User clicks heart icon on a candidate in Maps/LocationList
 ```
 
 ### **Step 2: Maps Component Handler**
@@ -194,7 +170,7 @@ useEffect(() => {
 useEffect(() => {
   const subscription = communication.favoriteCandidates$.subscribe(
     (favorites) => {
-      console.log('📊 Received favorites:', favorites.length);
+      console.log('[Insights] Received favorites:', favorites.length);
       setFavorites(favorites); // Update dashboard
     }
   );
@@ -203,13 +179,13 @@ useEffect(() => {
 ```
 
 ### **Step 5: React Re-renders**
-- Maps: Updates star icon to filled state
+- Maps: Updates heart icon to filled state
 - Insights: Adds new card to favorites dashboard
 - Both: Reflect the same data instantly
 
 ---
 
-## 🧪 Subject Types Comparison
+## Subject Types Comparison
 
 | Feature | BehaviorSubject | Subject | ReplaySubject |
 |---------|----------------|---------|---------------|
@@ -220,13 +196,13 @@ useEffect(() => {
 | **Example** | Favorites list | Click events | Message history |
 
 **In this app:**
-- ✅ `favoriteCandidatesSubject`: **BehaviorSubject** (needs current state)
-- ✅ `selectedCandidateSubject`: **BehaviorSubject** (needs current selection)
-- ✅ `globalMessageSubject`: **Subject** (events don't need replay)
+- `favoriteCandidatesSubject`: **BehaviorSubject** (needs current state)
+- `selectedCandidateSubject`: **BehaviorSubject** (needs current selection)
+- `globalMessageSubject`: **Subject** (events don't need replay)
 
 ---
 
-## 🔐 Key Design Patterns
+## Key Design Patterns
 
 ### 1. **Singleton via Window Object**
 ```typescript
@@ -238,8 +214,8 @@ Ensures Module Federation apps share the same instance.
 
 ### 2. **Immutable State Updates**
 ```typescript
-const newFavorites = [...currentFavorites, candidate]; // ✅ Good
-currentFavorites.push(candidate); // ❌ Bad (mutates)
+const newFavorites = [...currentFavorites, candidate]; // Good
+currentFavorites.push(candidate); // Bad (mutates)
 ```
 Prevents bugs and enables proper React re-renders.
 
@@ -259,7 +235,7 @@ useEffect(() => {
 
 ---
 
-## 📡 Message Types
+## Message Types
 
 | Message Type | Payload | Triggered By | Subscribers |
 |--------------|---------|--------------|-------------|
@@ -271,10 +247,10 @@ useEffect(() => {
 
 ---
 
-## 🎨 Real-World Example Flow
+## Real-World Example Flow
 
 ```
-1. User clicks ★ on "Candidate #123" in Maps
+1. User clicks heart on "Candidate #123" in Maps
    └─> MapsList.handleAddToFavorites()
 
 2. Communication Service receives request
@@ -285,7 +261,7 @@ useEffect(() => {
    └─> New: [candidate#456, candidate#789, candidate#123]
 
 4. BehaviorSubject emits new array
-   └─> Maps subscription: Updates UI (★ → ⭐)
+   └─> Maps subscription: Updates UI (heart icon filled)
    └─> Insights subscription: Adds new card to dashboard
 
 5. Subject broadcasts event message
@@ -294,12 +270,12 @@ useEffect(() => {
    └─> Source: 'maps'
    └─> Timestamp: 1700000000000
 
-6. Both UIs now show 3 favorites in sync! ✅
+6. Both UIs now show 3 favorites in sync!
 ```
 
 ---
 
-## 🔧 Testing the Communication
+## Testing the Communication
 
 ### Manual Test
 1. Open Maps microfrontend
@@ -312,25 +288,25 @@ useEffect(() => {
 
 ### Console Logs
 ```
-🗺️ [Maps] Adding favorite: candidate-123 from: maps
-🗺️ [Maps] Favorites updated. Total: 3
-📊 [Insights] Received favorites update: 3
+[Maps] Adding favorite: candidate-123 from: maps
+[Maps] Favorites updated. Total: 3
+[Insights] Received favorites update: 3
 ```
 
 ---
 
-## 🚀 Benefits of This Pattern
+## Benefits of This Pattern
 
-✅ **Decoupled**: Apps don't directly reference each other  
-✅ **Reactive**: Automatic updates without polling  
-✅ **Type-Safe**: TypeScript interfaces for all messages  
-✅ **Scalable**: Easy to add new microfrontends  
-✅ **Testable**: Can mock communication service  
-✅ **Real-time**: Instant synchronization across apps  
+**Decoupled**: Apps don't directly reference each other  
+**Reactive**: Automatic updates without polling  
+**Type-Safe**: TypeScript interfaces for all messages  
+**Scalable**: Easy to add new microfrontends  
+**Testable**: Can mock communication service  
+**Real-time**: Instant synchronization across apps  
 
 ---
 
-## 📚 Reference
+## Reference
 
 - **Files:**
   - `apps/maps/src/services/communication.ts`
