@@ -273,19 +273,7 @@ class MicrofrontendCommunicationService {
 
 ### Communication Flow Diagram
 
-```mermaid
-graph TD
-    A[User Interaction - Maps] -->|Add/Remove Favorite| B[Maps Component]
-    B -->|favoritesService.add()| C[Communication Service]
-    C -->|BehaviorSubject.next()| D[Global State Window Object]
-    D -->|Observable Subscription| E[Insights Dashboard]
-    E -->|State Update| F[Analytics Recalculation]
-    
-    G[GeoJSON Data] -->|HTTP Fetch| H[Mock Data Service]
-    H -->|Feature Collection| I[Maps Rendering]
-    I -->|User Selection| J[Selected Candidate State]
-    J -->|Cross-App Update| K[Insights Selected View]
-```
+![RxJS Communication Pattern - Maps and Insights Interaction](download.png)
 
 ### State Management Layers
 
